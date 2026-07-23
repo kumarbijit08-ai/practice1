@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Mind-Map",
+  "description": "Imported from GitHub: kumarbijit08-ai/Mind-Map",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

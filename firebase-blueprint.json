@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "Enquiry": {
+      "title": "Enquiry",
+      "description": "User submitted contact or course enquiries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the enquiry" },
+        "name": { "type": "string", "maxLength": 100, "description": "Sender full name" },
+        "email": { "type": "string", "format": "email", "description": "Sender contact email" },
+        "phone": { "type": "string", "maxLength": 20, "description": "Sender contact phone number" },
+        "subject": { "type": "string", "maxLength": 200, "description": "Subject of enquiry" },
+        "message": { "type": "string", "maxLength": 2000, "description": "Detailed message" },
+        "date": { "type": "string", "description": "Submission date string" },
+        "status": { "type": "string", "enum": ["New", "Replied", "Archived"], "description": "Current status" }
+      },
+      "required": ["name", "email", "phone", "subject", "message", "date", "status"]
+    },
+    "DinoHighscore": {
+      "title": "DinoHighscore",
+      "description": "High score entries from the Circuits Runner game",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique score identifier" },
+        "name": { "type": "string", "maxLength": 50, "description": "Player nickname" },
+        "score": { "type": "number", "description": "Score achieved" },
+        "level": { "type": "number", "description": "Level reached" },
+        "passedCount": { "type": "number", "description": "Number of components correctly identified" },
+        "date": { "type": "string", "description": "Date of run" }
+      },
+      "required": ["name", "score", "level", "passedCount", "date"]
+    },
+    "CMSSection": {
+      "title": "CMSSection",
+      "description": "Customizable content sections of the website managed by the admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Section identifier (e.g. 'general', 'about', 'founder', 'programs', 'services', 'projects', 'gallery', 'achievements', 'testimonials', 'contact')" },
+        "data": { "type": "object", "description": "JSON map holding section-specific content" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last update" }
+      },
+      "required": ["id", "data", "updatedAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized administrators who can modify CMS sections",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID of the admin" },
+        "email": { "type": "string", "format": "email", "description": "Administrator email address" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/enquiries/{enquiryId}": {
+      "schema": "Enquiry",
+      "description": "User queries submitted via Contact form"
+    },
+    "/dino_highscores/{scoreId}": {
+      "schema": "DinoHighscore",
+      "description": "Circuits Runner leaderboard entries"
+    },
+    "/cms_sections/{sectionId}": {
+      "schema": "CMSSection",
+      "description": "Dynamic layout configuration and text blocks"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Administrator accounts mapping to Firebase Auth UIDs"
+    }
+  }
+}

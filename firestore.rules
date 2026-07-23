@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'kumarbijit08@gmail.com'
+      );
+    }
+
+    // Enquiry validations
+    function isValidEnquiry(data) {
+      return data.keys().hasAll(['name', 'email', 'phone', 'subject', 'message', 'date', 'status'])
+        && data.keys().size() == 7
+        && data.name is string && data.name.size() <= 100
+        && data.email is string && data.email.size() <= 150
+        && data.phone is string && data.phone.size() <= 30
+        && data.subject is string && data.subject.size() <= 200
+        && data.message is string && data.message.size() <= 3000
+        && data.date is string && data.date.size() <= 50
+        && data.status in ['New', 'Replied', 'Archived'];
+    }
+
+    // Dino Highscore validations
+    function isValidHighscore(data) {
+      return data.keys().hasAll(['name', 'score', 'level', 'passedCount', 'date'])
+        && data.keys().size() == 5
+        && data.name is string && data.name.size() <= 50
+        && data.score is number && data.score >= 0
+        && data.level is number && data.level >= 1
+        && data.passedCount is number && data.passedCount >= 0
+        && data.date is string && data.date.size() <= 50;
+    }
+
+    // CMS Section validations
+    function isValidCMSSection(data) {
+      return data.keys().hasAll(['id', 'data', 'updatedAt'])
+        && data.keys().size() == 3
+        && data.id is string && data.id.size() <= 100
+        && data.data is map
+        && data.updatedAt is string && data.updatedAt.size() <= 50;
+    }
+
+    // Enquiries Collection Rules
+    match /enquiries/{enquiryId} {
+      allow create: if isValidId(enquiryId) && isValidEnquiry(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Dino Highscores Collection Rules
+    match /dino_highscores/{scoreId} {
+      allow create: if isValidId(scoreId) && isValidHighscore(request.resource.data);
+      allow read: if true; // Public leaderboard
+      allow update, delete: if isAdmin();
+    }
+
+    // CMS Sections Collection Rules
+    match /cms_sections/{sectionId} {
+      allow read: if true; // Public website access
+      allow write: if isAdmin() && isValidId(sectionId) && isValidCMSSection(request.resource.data);
+    }
+
+    // Admin profiles
+    match /admins/{adminId} {
+      allow read: if isSignedIn() && (request.auth.uid == adminId || isAdmin());
+      allow write: if isAdmin();
+    }
+  }
+}
